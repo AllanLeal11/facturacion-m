@@ -2,24 +2,239 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Factura Acquarello</title>
-  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Estilos Internos -->
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #ecf0f1;
+      --accent-color: #3498db;
+      --font-family: 'Roboto', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+    .card {
+      background-color: #fff;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    .form-group input {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 0.25rem;
+      font-size: 1rem;
+    }
+    .form-row {
+      display: flex;
+      flex-direction: column;
+    }
+    @media (min-width: 600px) {
+      .form-row {
+        flex-direction: row;
+        gap: 1rem;
+      }
+      .form-row .form-group {
+        flex: 1;
+      }
+    }
+    .btn {
+      display: inline-block;
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+      text-align: center;
+    }
+    .btn:hover {
+      background-color: #2980b9;
+    }
+    #recibo h3 {
+      margin-top: 0;
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+    #recibo {
+      margin-top: 1.5rem;
+    }
+    #recibo table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    #recibo th,
+    #recibo td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid #ccc;
+      margin: 1.5rem 0;
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-  <h1>Generador de Facturas</h1>
+  <div class="container">
+    <h1>Generador de Facturas</h1>
 
-  <form id="facturaForm">
-    <label>Fecha: <input type="date" id="fecha" required></label><br>
-    <label>Desayunos: <input type="number" id="desayunos" required></label><br>
-    <label>Almuerzos: <input type="number" id="almuerzos" required></label><br>
-    <label>Cenas: <input type="number" id="cenas" required></label><br>
-    <label>Bidones: <input type="number" id="bidones" required></label><br>
+    <div class="card">
+      <form id="facturaForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" required>
+          </div>
+          <div class="form-group">
+            <label for="desayunos">Desayunos</label>
+            <input type="number" id="desayunos" min="0" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="almuerzos">Almuerzos</label>
+            <input type="number" id="almuerzos" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="cenas">Cenas</label>
+            <input type="number" id="cenas" min="0" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="bidones">Bidones</label>
+          <input type="number" id="bidones" min="0" required>
+        </div>
+        <button type="submit" class="btn">Agregar día</button>
+      </form>
+    </div>
 
-    <button type="submit">Agregar día</button>
-  </form>
+    <div class="card" id="recibo">
+      <h3>Factura</h3>
+      <div id="facturaContenido">
+        <p><em>No hay datos aún.</em></p>
+      </div>
+    </div>
 
-  <button id="generarPDF">Generar PDF Final</button>
+    <div class="text-center">
+      <button onclick="descargarPDF()" class="btn">Descargar PDF</button>
+    </div>
+  </div>
 
-  <script type="module" src="script.js"></script>
+  <script>
+    const registros = [];
+    const precios = { desayuno: 2500, almuerzo: 3000, cena: 2800, bidon: 2041 };
+
+    document.getElementById('facturaForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const fecha = document.getElementById('fecha').value;
+      const desayunos = parseInt(document.getElementById('desayunos').value);
+      const almuerzos = parseInt(document.getElementById('almuerzos').value);
+      const cenas = parseInt(document.getElementById('cenas').value);
+      const bidones = parseInt(document.getElementById('bidones').value);
+
+      registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
+      mostrarFactura();
+      this.reset();
+    });
+
+    function mostrarFactura() {
+      const contenedor = document.getElementById('facturaContenido');
+      contenedor.innerHTML = '';
+      let totalAcumulado = 0;
+
+      registros.forEach(r => {
+        const totalDes = r.desayunos * precios.desayuno;
+        const totalAlm = r.almuerzos * precios.almuerzo;
+        const totalCen = r.cenas * precios.cena;
+        const totalBid = r.bidones * precios.bidon;
+        const subtotal = totalDes + totalAlm + totalCen + totalBid;
+        totalAcumulado += subtotal;
+
+        contenedor.innerHTML += `
+          <table>
+            <thead>
+              <tr><th colspan="4">Fecha: ${r.fecha}</th></tr>
+              <tr>
+                <th>Ítem</th>
+                <th>Cantidad</th>
+                <th>Precio U</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Desayunos</td><td>${r.desayunos}</td><td>${precios.desayuno}</td><td>${totalDes}</td></tr>
+              <tr><td>Almuerzos</td><td>${r.almuerzos}</td><td>${precios.almuerzo}</td><td>${totalAlm}</td></tr>
+              <tr><td>Cenas</td><td>${r.cenas}</td><td>${precios.cena}</td><td>${totalCen}</td></tr>
+              <tr><td>Bidones</td><td>${r.bidones}</td><td>${precios.bidon}</td><td>${totalBid}</td></tr>
+              <tr><td colspan="3"><strong>Subtotal</strong></td><td><strong>${subtotal.toFixed(2)}</strong></td></tr>
+            </tbody>
+          </table>
+        `;
+      });
+
+      const iva = totalAcumulado * 0.13;
+      const totalFinal = totalAcumulado + iva;
+
+      contenedor.innerHTML += `
+        <hr>
+        <p><strong>Total sin IVA:</strong> ${totalAcumulado.toFixed(2)}</p>
+        <p><strong>IVA (13%):</strong> ${iva.toFixed(2)}</p>
+        <p><strong>Total Final:</strong> ${totalFinal.toFixed(2)}</p>
+      `;
+    }
+
+    function descargarPDF() {
+      const elemento = document.getElementById("recibo");
+      const opciones = {
+        margin: 0.5,
+        filename: 'factura.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opciones).from(elemento).save();
+    }
+  </script>
 </body>
 </html>
+
