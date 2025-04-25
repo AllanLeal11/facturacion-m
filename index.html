@@ -74,6 +74,15 @@
       margin-top: 2rem;
       text-align: right;
     }
+
+    /* Estilos solo para PDF */
+    .pdf-export {
+      background: white !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      color: black !important;
+    }
+
     @media (max-width: 600px) {
       body {
         padding: 1rem;
@@ -164,15 +173,20 @@
 
     function descargarPDF() {
       const elemento = document.getElementById("recibo");
+      elemento.classList.add('pdf-export');
+
       setTimeout(() => {
         const opciones = {
           margin: 0.5,
           filename: 'factura_acquarello.pdf',
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
+          html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
           jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
-        html2pdf().set(opciones).from(elemento).save();
+
+        html2pdf().set(opciones).from(elemento).save().then(() => {
+          elemento.classList.remove('pdf-export');
+        });
       }, 500);
     }
   </script>
