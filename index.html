@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guana Solution Food</title>
+  <title>Factura Acquarello</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
@@ -75,7 +75,6 @@
       text-align: right;
     }
 
-    /* Estilos solo para PDF */
     .pdf-export {
       background: white !important;
       box-shadow: none !important;
@@ -95,7 +94,7 @@
 </head>
 <body>
 
-  <h1>Guana Solution Food</h1>
+  <h1>Factura Acquarello</h1>
 
   <form id="facturaForm">
     <label>Fecha: <input type="date" id="fecha" required /></label>
@@ -118,7 +117,9 @@
 
   <script>
     const registros = [];
-    const precios = { desayuno: 2500, almuerzo: 3000, cena: 2800, bidon: 2041 };
+    const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
+
+    const formatear = num => `₡${num.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
 
     document.getElementById('facturaForm').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -151,11 +152,11 @@
           <h3>Día ${i + 1} - ${r.fecha}</h3>
           <table>
             <tr><th>Ítem</th><th>Cantidad</th><th>Precio Unitario</th><th>Total</th></tr>
-            <tr><td>Desayunos</td><td>${r.desayunos}</td><td>₡${precios.desayuno}</td><td>₡${totalDes}</td></tr>
-            <tr><td>Almuerzos</td><td>${r.almuerzos}</td><td>₡${precios.almuerzo}</td><td>₡${totalAlm}</td></tr>
-            <tr><td>Cenas</td><td>${r.cenas}</td><td>₡${precios.cena}</td><td>₡${totalCen}</td></tr>
-            <tr><td>Bidones</td><td>${r.bidones}</td><td>₡${precios.bidon}</td><td>₡${totalBid}</td></tr>
-            <tr><td colspan="3"><strong>Subtotal del día</strong></td><td><strong>₡${subtotal.toFixed(2)}</strong></td></tr>
+            <tr><td>Desayunos</td><td>${r.desayunos}</td><td>${formatear(precios.desayuno)}</td><td>${formatear(totalDes)}</td></tr>
+            <tr><td>Almuerzos</td><td>${r.almuerzos}</td><td>${formatear(precios.almuerzo)}</td><td>${formatear(totalAlm)}</td></tr>
+            <tr><td>Cenas</td><td>${r.cenas}</td><td>${formatear(precios.cena)}</td><td>${formatear(totalCen)}</td></tr>
+            <tr><td>Bidones</td><td>${r.bidones}</td><td>${formatear(precios.bidon)}</td><td>${formatear(totalBid)}</td></tr>
+            <tr><td colspan="3"><strong>Subtotal del día</strong></td><td><strong>${formatear(subtotal)}</strong></td></tr>
           </table>
         `;
       });
@@ -165,9 +166,9 @@
 
       document.getElementById('tablaFacturas').innerHTML = html;
       document.getElementById('totalesFinales').innerHTML = `
-        <p><strong>Subtotal General:</strong> ₡${totalGeneral.toFixed(2)}</p>
-        <p><strong>IVA (13%):</strong> ₡${iva.toFixed(2)}</p>
-        <p><strong>Total Final:</strong> ₡${totalFinal.toFixed(2)}</p>
+        <p><strong>Subtotal General:</strong> ${formatear(totalGeneral)}</p>
+        <p><strong>IVA (13%):</strong> ${formatear(iva)}</p>
+        <p><strong>Total Final:</strong> ${formatear(totalFinal)}</p>
       `;
     }
 
@@ -192,3 +193,4 @@
   </script>
 </body>
 </html>
+
