@@ -1,162 +1,110 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Factura Acquarello</title>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
-  <!-- Estilos Internos -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
-    :root {
-      --primary-color: #2c3e50;
-      --secondary-color: #ecf0f1;
-      --accent-color: #3498db;
-      --font-family: 'Roboto', sans-serif;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: var(--font-family);
-      background-color: var(--secondary-color);
-      color: var(--primary-color);
-      line-height: 1.6;
-    }
-    .container {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 1rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f4f4f9;
+      color: #333;
     }
     h1 {
       text-align: center;
-      margin-bottom: 2rem;
-      font-weight: 700;
-      color: var(--primary-color);
+      color: #005577;
     }
-    .card {
-      background-color: #fff;
-      border-radius: 0.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 1.5rem;
-      margin-bottom: 2rem;
+    form {
+      max-width: 500px;
+      margin: 0 auto 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    .form-group {
-      display: flex;
-      flex-direction: column;
+    label {
+      display: block;
       margin-bottom: 1rem;
     }
-    .form-group label {
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-    }
-    .form-group input {
+    input {
+      width: 100%;
       padding: 0.5rem;
+      margin-top: 0.25rem;
       border: 1px solid #ccc;
-      border-radius: 0.25rem;
-      font-size: 1rem;
+      border-radius: 4px;
     }
-    .form-row {
-      display: flex;
-      flex-direction: column;
-    }
-    @media (min-width: 600px) {
-      .form-row {
-        flex-direction: row;
-        gap: 1rem;
-      }
-      .form-row .form-group {
-        flex: 1;
-      }
-    }
-    .btn {
-      display: inline-block;
-      background-color: var(--accent-color);
-      color: #fff;
-      border: none;
+    button {
+      background: #0077aa;
+      color: white;
       padding: 0.75rem 1.5rem;
-      border-radius: 0.25rem;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: background-color 0.3s ease;
-      text-align: center;
+      margin-top: 1rem;
     }
-    .btn:hover {
-      background-color: #2980b9;
-    }
-    #recibo h3 {
-      margin-top: 0;
-      font-weight: 700;
-      color: var(--accent-color);
+    button:hover {
+      background: #005f88;
     }
     #recibo {
-      margin-top: 1.5rem;
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    #recibo table {
+    table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 1.5rem;
+      margin-top: 1rem;
     }
-    #recibo th,
-    #recibo td {
+    th, td {
       border: 1px solid #ddd;
-      padding: 0.75rem;
-      text-align: left;
+      padding: 0.5rem;
+      text-align: center;
     }
-    hr {
-      border: 0;
-      border-top: 1px solid #ccc;
-      margin: 1.5rem 0;
+    th {
+      background: #0077aa;
+      color: white;
+    }
+    .totales {
+      margin-top: 2rem;
+      text-align: right;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+      form, #recibo {
+        padding: 1rem;
+      }
     }
   </style>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Generador de Facturas</h1>
 
-    <div class="card">
-      <form id="facturaForm">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="fecha">Fecha</label>
-            <input type="date" id="fecha" required>
-          </div>
-          <div class="form-group">
-            <label for="desayunos">Desayunos</label>
-            <input type="number" id="desayunos" min="0" required>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="almuerzos">Almuerzos</label>
-            <input type="number" id="almuerzos" min="0" required>
-          </div>
-          <div class="form-group">
-            <label for="cenas">Cenas</label>
-            <input type="number" id="cenas" min="0" required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="bidones">Bidones</label>
-          <input type="number" id="bidones" min="0" required>
-        </div>
-        <button type="submit" class="btn">Agregar día</button>
-      </form>
-    </div>
+  <h1>Factura Acquarello</h1>
 
-    <div class="card" id="recibo">
-      <h3>Factura</h3>
-      <div id="facturaContenido">
-        <p><em>No hay datos aún.</em></p>
-      </div>
-    </div>
+  <form id="facturaForm">
+    <label>Fecha: <input type="date" id="fecha" required /></label>
+    <label>Desayunos: <input type="number" id="desayunos" required /></label>
+    <label>Almuerzos: <input type="number" id="almuerzos" required /></label>
+    <label>Cenas: <input type="number" id="cenas" required /></label>
+    <label>Bidones: <input type="number" id="bidones" required /></label>
+    <button type="submit">Agregar día</button>
+  </form>
 
-    <div class="text-center">
-      <button onclick="descargarPDF()" class="btn">Descargar PDF</button>
-    </div>
+  <div id="recibo">
+    <h2>Detalle de Factura</h2>
+    <div id="tablaFacturas"></div>
+    <div class="totales" id="totalesFinales"></div>
+  </div>
+
+  <div style="text-align: center; margin-top: 2rem;">
+    <button onclick="descargarPDF()">Descargar PDF</button>
   </div>
 
   <script>
@@ -173,68 +121,60 @@
       const bidones = parseInt(document.getElementById('bidones').value);
 
       registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
-      mostrarFactura();
-      this.reset();
+      mostrarTabla();
+      e.target.reset();
     });
 
-    function mostrarFactura() {
-      const contenedor = document.getElementById('facturaContenido');
-      contenedor.innerHTML = '';
-      let totalAcumulado = 0;
+    function mostrarTabla() {
+      let html = '';
+      let totalGeneral = 0;
 
-      registros.forEach(r => {
+      registros.forEach((r, i) => {
         const totalDes = r.desayunos * precios.desayuno;
         const totalAlm = r.almuerzos * precios.almuerzo;
         const totalCen = r.cenas * precios.cena;
         const totalBid = r.bidones * precios.bidon;
         const subtotal = totalDes + totalAlm + totalCen + totalBid;
-        totalAcumulado += subtotal;
 
-        contenedor.innerHTML += `
+        totalGeneral += subtotal;
+
+        html += `
+          <h3>Día ${i + 1} - ${r.fecha}</h3>
           <table>
-            <thead>
-              <tr><th colspan="4">Fecha: ${r.fecha}</th></tr>
-              <tr>
-                <th>Ítem</th>
-                <th>Cantidad</th>
-                <th>Precio U</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Desayunos</td><td>${r.desayunos}</td><td>${precios.desayuno}</td><td>${totalDes}</td></tr>
-              <tr><td>Almuerzos</td><td>${r.almuerzos}</td><td>${precios.almuerzo}</td><td>${totalAlm}</td></tr>
-              <tr><td>Cenas</td><td>${r.cenas}</td><td>${precios.cena}</td><td>${totalCen}</td></tr>
-              <tr><td>Bidones</td><td>${r.bidones}</td><td>${precios.bidon}</td><td>${totalBid}</td></tr>
-              <tr><td colspan="3"><strong>Subtotal</strong></td><td><strong>${subtotal.toFixed(2)}</strong></td></tr>
-            </tbody>
+            <tr><th>Ítem</th><th>Cantidad</th><th>Precio Unitario</th><th>Total</th></tr>
+            <tr><td>Desayunos</td><td>${r.desayunos}</td><td>₡${precios.desayuno}</td><td>₡${totalDes}</td></tr>
+            <tr><td>Almuerzos</td><td>${r.almuerzos}</td><td>₡${precios.almuerzo}</td><td>₡${totalAlm}</td></tr>
+            <tr><td>Cenas</td><td>${r.cenas}</td><td>₡${precios.cena}</td><td>₡${totalCen}</td></tr>
+            <tr><td>Bidones</td><td>${r.bidones}</td><td>₡${precios.bidon}</td><td>₡${totalBid}</td></tr>
+            <tr><td colspan="3"><strong>Subtotal del día</strong></td><td><strong>₡${subtotal.toFixed(2)}</strong></td></tr>
           </table>
         `;
       });
 
-      const iva = totalAcumulado * 0.13;
-      const totalFinal = totalAcumulado + iva;
+      const iva = totalGeneral * 0.13;
+      const totalFinal = totalGeneral + iva;
 
-      contenedor.innerHTML += `
-        <hr>
-        <p><strong>Total sin IVA:</strong> ${totalAcumulado.toFixed(2)}</p>
-        <p><strong>IVA (13%):</strong> ${iva.toFixed(2)}</p>
-        <p><strong>Total Final:</strong> ${totalFinal.toFixed(2)}</p>
+      document.getElementById('tablaFacturas').innerHTML = html;
+      document.getElementById('totalesFinales').innerHTML = `
+        <p><strong>Subtotal General:</strong> ₡${totalGeneral.toFixed(2)}</p>
+        <p><strong>IVA (13%):</strong> ₡${iva.toFixed(2)}</p>
+        <p><strong>Total Final:</strong> ₡${totalFinal.toFixed(2)}</p>
       `;
     }
 
     function descargarPDF() {
       const elemento = document.getElementById("recibo");
-      const opciones = {
-        margin: 0.5,
-        filename: 'factura.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-      html2pdf().set(opciones).from(elemento).save();
+      setTimeout(() => {
+        const opciones = {
+          margin: 0.5,
+          filename: 'factura_acquarello.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+        html2pdf().set(opciones).from(elemento).save();
+      }, 500);
     }
   </script>
 </body>
 </html>
-
