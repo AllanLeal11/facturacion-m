@@ -2,209 +2,228 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Guana Solution Food</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#004466">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Guana Solution Food">
-  <link rel="icon" href="icono.png">
-  <link rel="apple-touch-icon" href="icono.png">
+  <title>Guana Solution Food</title>
+  <link rel="manifest" href="manifest.json">
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f7fa;
-      color: #333;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      padding: 1rem;
+      padding: 0;
+      background: #f4f4f9;
+      display: flex;
+      flex-direction: column;
     }
-    header, footer {
-      text-align: center;
-      padding: 1rem;
-      background-color: #004466;
+    header {
+      background-color: #2c3e50;
       color: white;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-    }
-    form, .resumen, .acciones {
-      background: white;
       padding: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
     }
-    label {
+    .container {
+      display: flex;
+      flex: 1;
+      min-height: 100vh;
+    }
+    .sidebar {
+      min-width: 200px;
+      width: 20%;
+      max-width: 300px;
+      background-color: #34495e;
+      color: white;
+      padding: 1rem;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      resize: horizontal;
+      overflow: auto;
+    }
+    .sidebar h3 {
+      margin-top: 0;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar li {
+      margin: 1rem 0;
+      cursor: pointer;
+    }
+    .content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    form label {
       display: block;
-      margin: 0.5rem 0;
+      margin-bottom: 0.5rem;
     }
-    input, button, select {
+    input[type="number"], input[type="date"] {
       width: 100%;
       padding: 0.5rem;
-      margin-top: 0.3rem;
-      font-size: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
-    .ventas-lista {
-      margin: 1rem 0;
-    }
-    .dark-mode {
-      background-color: #1f1f1f;
+    button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      background-color: #27ae60;
       color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 0.5rem;
     }
-    .dark-mode header, .dark-mode footer {
-      background-color: #111;
+    .history-entry {
+      background: white;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-left: 5px solid #27ae60;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .acciones button {
+    .history-entry button {
       margin-top: 0.5rem;
+      background-color: #e74c3c;
     }
-    @media (min-width: 600px) {
-      form, .resumen, .acciones {
-        max-width: 600px;
-        margin: 0 auto;
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        max-width: none;
+        resize: none;
       }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Guana Solution Food</h1>
-    <button onclick="toggleDarkMode()">🌙 / ☀️</button>
-    <button onclick="toggleIdioma()">🌐</button>
-  </header>
+  <header>Guana Solution Food</header>
+  <div class="container">
+    <div class="sidebar">
+      <h3>Menú</h3>
+      <ul>
+        <li onclick="mostrarSeccion('registro')">Registrar Venta</li>
+        <li onclick="mostrarSeccion('historial')">Historial</li>
+      </ul>
+    </div>
+    <div class="content">
+      <section id="registro">
+        <form id="ventaForm">
+          <label>Fecha: <input type="date" id="fecha" required></label>
+          <label>Desayunos: <input type="number" id="desayunos" required></label>
+          <label>Almuerzos: <input type="number" id="almuerzos" required></label>
+          <label>Cenas: <input type="number" id="cenas" required></label>
+          <label>Bidones: <input type="number" id="bidones" required></label>
+          <button type="submit">Guardar</button>
+          <button type="button" onclick="generarPDF()">Descargar PDF</button>
+        </form>
+      </section>
 
-  <form id="ventaForm">
-    <label data-text="Fecha">Fecha:<input type="date" id="fecha" required></label>
-    <label data-text="Desayunos">Desayunos:<input type="number" id="desayunos" required></label>
-    <label data-text="Almuerzos">Almuerzos:<input type="number" id="almuerzos" required></label>
-    <label data-text="Cenas">Cenas:<input type="number" id="cenas" required></label>
-    <label data-text="Bidones">Bidones:<input type="number" id="bidones" required></label>
-    <button type="submit" data-text="Agregar día">Agregar día</button>
-  </form>
-
-  <div class="acciones">
-    <button onclick="descargarPDF()" data-text="Descargar PDF">Descargar PDF</button>
-    <button onclick="exportarDatos()" data-text="Guardar respaldo">Guardar respaldo</button>
-    <input type="file" accept=".json" onchange="importarDatos(event)">
+      <section id="historial" style="display:none;">
+        <h2>Historial de Ventas</h2>
+        <div id="historialContainer"></div>
+      </section>
+    </div>
   </div>
 
-  <div class="ventas-lista" id="listaVentas"></div>
-
-  <footer>
-    <p>&copy; 2025 Guana Solution Food</p>
-  </footer>
-
   <script>
-    const registros = JSON.parse(localStorage.getItem('ventas')) || [];
-    const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
-    const idioma = localStorage.getItem('idioma') || 'es';
+    let registros = JSON.parse(localStorage.getItem("ventas")) || [];
 
-    document.getElementById('ventaForm').addEventListener('submit', e => {
+    document.getElementById("ventaForm").addEventListener("submit", function(e) {
       e.preventDefault();
-      const nueva = {
-        fecha: document.getElementById('fecha').value,
-        desayunos: +document.getElementById('desayunos').value,
-        almuerzos: +document.getElementById('almuerzos').value,
-        cenas: +document.getElementById('cenas').value,
-        bidones: +document.getElementById('bidones').value
-      };
-      registros.push(nueva);
-      localStorage.setItem('ventas', JSON.stringify(registros));
-      mostrarVentas();
-      e.target.reset();
+      const fecha = document.getElementById("fecha").value;
+      const desayunos = parseInt(document.getElementById("desayunos").value);
+      const almuerzos = parseInt(document.getElementById("almuerzos").value);
+      const cenas = parseInt(document.getElementById("cenas").value);
+      const bidones = parseInt(document.getElementById("bidones").value);
+      registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
+      localStorage.setItem("ventas", JSON.stringify(registros));
+      alert("Venta registrada correctamente");
+      this.reset();
     });
 
-    function mostrarVentas() {
-      let html = '<h3>Resumen diario</h3>';
-      let totalGlobal = 0;
-      registros.forEach(r => {
-        const subtotal = r.desayunos * precios.desayuno + r.almuerzos * precios.almuerzo + r.cenas * precios.cena + r.bidones * precios.bidon;
-        totalGlobal += subtotal;
-        html += `<div><strong>${r.fecha}</strong><br>
-          Subtotal: ₡${subtotal.toFixed(2)}</div><hr>`;
-      });
-      document.getElementById('listaVentas').innerHTML = html;
+    function mostrarSeccion(id) {
+      document.getElementById("registro").style.display = id === 'registro' ? 'block' : 'none';
+      document.getElementById("historial").style.display = id === 'historial' ? 'block' : 'none';
+      if (id === 'historial') cargarHistorial();
     }
 
-    function descargarPDF() {
-      import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(js => {
-        const { jsPDF } = js;
+    function cargarHistorial() {
+      const contenedor = document.getElementById("historialContainer");
+      contenedor.innerHTML = '';
+      const registrosOrdenados = [...registros].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      registrosOrdenados.forEach((r, index) => {
+        const div = document.createElement("div");
+        div.className = "history-entry";
+        div.innerHTML = `
+          <strong>Fecha:</strong> ${r.fecha}<br>
+          Desayunos: ${r.desayunos}, Almuerzos: ${r.almuerzos}, Cenas: ${r.cenas}, Bidones: ${r.bidones}<br>
+          <button onclick="eliminarRegistro(${index})">Eliminar</button>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function eliminarRegistro(index) {
+      registros.splice(index, 1);
+      localStorage.setItem("ventas", JSON.stringify(registros));
+      cargarHistorial();
+    }
+
+    function generarPDF() {
+      if (registros.length === 0) return alert("No hay datos");
+
+      import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(jsPDFModule => {
         import('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/+esm').then(autoTable => {
+          const { jsPDF } = jsPDFModule;
           const doc = new jsPDF();
-          let finalTotal = 0;
+          const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
+          let totalFinal = 0;
+
           registros.forEach((r, i) => {
-            const sub = r.desayunos * precios.desayuno + r.almuerzos * precios.almuerzo + r.cenas * precios.cena + r.bidones * precios.bidon;
-            finalTotal += sub;
+            const totalDes = r.desayunos * precios.desayuno;
+            const totalAlm = r.almuerzos * precios.almuerzo;
+            const totalCen = r.cenas * precios.cena;
+            const totalBid = r.bidones * precios.bidon;
+            const subtotal = totalDes + totalAlm + totalCen + totalBid;
+            totalFinal += subtotal;
             if (i > 0) doc.addPage();
+
             doc.setFontSize(14);
             doc.text("Guana Solution Food", 20, 20);
             doc.text(`Fecha: ${r.fecha}`, 20, 30);
+
             autoTable.default(doc, {
               startY: 40,
-              head: [['Ítem', 'Cantidad', 'Precio', 'Total']],
+              head: [["Ítem", "Cantidad", "Precio U", "Total"]],
               body: [
-                ['Desayunos', r.desayunos, precios.desayuno, (r.desayunos * precios.desayuno).toFixed(2)],
-                ['Almuerzos', r.almuerzos, precios.almuerzo, (r.almuerzos * precios.almuerzo).toFixed(2)],
-                ['Cenas', r.cenas, precios.cena, (r.cenas * precios.cena).toFixed(2)],
-                ['Bidones', r.bidones, precios.bidon, (r.bidones * precios.bidon).toFixed(2)],
-                ['', '', 'Subtotal', sub.toFixed(2)]
+                ["Desayunos", r.desayunos, "₡2,500", totalDes.toFixed(2)],
+                ["Almuerzos", r.almuerzos, "₡2,500", totalAlm.toFixed(2)],
+                ["Cenas", r.cenas, "₡2,500", totalCen.toFixed(2)],
+                ["Bidones", r.bidones, "₡2,000", totalBid.toFixed(2)],
+                ["", "", "Subtotal", subtotal.toFixed(2)],
               ]
             });
           });
-          const iva = finalTotal * 0.13;
-          const total = finalTotal + iva;
+
+          const iva = totalFinal * 0.13;
+          const totalConIVA = totalFinal + iva;
           doc.addPage();
-          doc.text('Resumen General', 20, 20);
+          doc.setFontSize(16);
+          doc.text("Resumen Final", 20, 20);
           autoTable.default(doc, {
             startY: 30,
             body: [
-              ['Subtotal', `₡${finalTotal.toFixed(2)}`],
-              ['IVA 13%', `₡${iva.toFixed(2)}`],
-              ['Total', `₡${total.toFixed(2)}`]
+              ["Subtotal acumulado", `₡${totalFinal.toFixed(2)}`],
+              ["IVA (13%)", `₡${iva.toFixed(2)}`],
+              ["Total con IVA", `₡${totalConIVA.toFixed(2)}`],
             ]
           });
-          doc.save('ventas.pdf');
+
+          doc.save("Guana_Solution_Food.pdf");
         });
       });
     }
-
-    function exportarDatos() {
-      const blob = new Blob([JSON.stringify(registros)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'respaldo_ventas.json';
-      a.click();
-    }
-
-    function importarDatos(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const datos = JSON.parse(reader.result);
-        registros.splice(0, registros.length, ...datos);
-        localStorage.setItem('ventas', JSON.stringify(registros));
-        mostrarVentas();
-      };
-      reader.readAsText(file);
-    }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      localStorage.setItem('modoOscuro', document.body.classList.contains('dark-mode'));
-    }
-
-    function toggleIdioma() {
-      const nuevo = idioma === 'es' ? 'en' : 'es';
-      localStorage.setItem('idioma', nuevo);
-      location.reload();
-    }
-
-    window.addEventListener('load', () => {
-      if (localStorage.getItem('modoOscuro') === 'true') {
-        document.body.classList.add('dark-mode');
-      }
-      mostrarVentas();
-    });
   </script>
 </body>
 </html>
