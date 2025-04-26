@@ -1,196 +1,210 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Guana Solution Food</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#004466">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guana Solution Food">
+  <link rel="icon" href="icono.png">
+  <link rel="apple-touch-icon" href="icono.png">
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 2rem;
-      background: #f4f4f9;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
       color: #333;
+      margin: 0;
+      padding: 1rem;
     }
-    h1 {
+    header, footer {
       text-align: center;
-      color: #005577;
+      padding: 1rem;
+      background-color: #004466;
+      color: white;
+      border-radius: 10px;
+      margin-bottom: 1rem;
     }
-    form {
-      max-width: 500px;
-      margin: 0 auto 2rem auto;
+    form, .resumen, .acciones {
       background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
     }
     label {
       display: block;
-      margin-bottom: 1rem;
+      margin: 0.5rem 0;
     }
-    input {
+    input, button, select {
       width: 100%;
       padding: 0.5rem;
-      margin-top: 0.25rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      margin-top: 0.3rem;
+      font-size: 1rem;
     }
-    button {
-      background: #0077aa;
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 1rem;
+    .ventas-lista {
+      margin: 1rem 0;
     }
-    button:hover {
-      background: #005f88;
-    }
-    #recibo {
-      max-width: 800px;
-      margin: 0 auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 0.5rem;
-      text-align: center;
-    }
-    th {
-      background: #0077aa;
+    .dark-mode {
+      background-color: #1f1f1f;
       color: white;
     }
-    .totales {
-      margin-top: 2rem;
-      text-align: right;
+    .dark-mode header, .dark-mode footer {
+      background-color: #111;
     }
-
-    .pdf-export {
-      background: white !important;
-      box-shadow: none !important;
-      border-radius: 0 !important;
-      color: black !important;
+    .acciones button {
+      margin-top: 0.5rem;
     }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 1rem;
-      }
-      form, #recibo {
-        padding: 1rem;
+    @media (min-width: 600px) {
+      form, .resumen, .acciones {
+        max-width: 600px;
+        margin: 0 auto;
       }
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>Guana Solution Food</h1>
+    <button onclick="toggleDarkMode()">🌙 / ☀️</button>
+    <button onclick="toggleIdioma()">🌐</button>
+  </header>
 
-  <h1>Guana Solution Food</h1>
-
-  <form id="facturaForm">
-    <label>Fecha: <input type="date" id="fecha" required /></label>
-    <label>Desayunos: <input type="number" id="desayunos" required /></label>
-    <label>Almuerzos: <input type="number" id="almuerzos" required /></label>
-    <label>Cenas: <input type="number" id="cenas" required /></label>
-    <label>Bidones: <input type="number" id="bidones" required /></label>
-    <button type="submit">Agregar día</button>
+  <form id="ventaForm">
+    <label data-text="Fecha">Fecha:<input type="date" id="fecha" required></label>
+    <label data-text="Desayunos">Desayunos:<input type="number" id="desayunos" required></label>
+    <label data-text="Almuerzos">Almuerzos:<input type="number" id="almuerzos" required></label>
+    <label data-text="Cenas">Cenas:<input type="number" id="cenas" required></label>
+    <label data-text="Bidones">Bidones:<input type="number" id="bidones" required></label>
+    <button type="submit" data-text="Agregar día">Agregar día</button>
   </form>
 
-  <div id="recibo">
-    <h2>Detalle de Factura</h2>
-    <div id="tablaFacturas"></div>
-    <div class="totales" id="totalesFinales"></div>
+  <div class="acciones">
+    <button onclick="descargarPDF()" data-text="Descargar PDF">Descargar PDF</button>
+    <button onclick="exportarDatos()" data-text="Guardar respaldo">Guardar respaldo</button>
+    <input type="file" accept=".json" onchange="importarDatos(event)">
   </div>
 
-  <div style="text-align: center; margin-top: 2rem;">
-    <button onclick="descargarPDF()">Descargar PDF</button>
-  </div>
+  <div class="ventas-lista" id="listaVentas"></div>
+
+  <footer>
+    <p>&copy; 2025 Guana Solution Food</p>
+  </footer>
 
   <script>
-    const registros = [];
+    const registros = JSON.parse(localStorage.getItem('ventas')) || [];
     const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
+    const idioma = localStorage.getItem('idioma') || 'es';
 
-    const formatear = num => `₡${num.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
-
-    document.getElementById('facturaForm').addEventListener('submit', function (e) {
+    document.getElementById('ventaForm').addEventListener('submit', e => {
       e.preventDefault();
-
-      const fecha = document.getElementById('fecha').value;
-      const desayunos = parseInt(document.getElementById('desayunos').value);
-      const almuerzos = parseInt(document.getElementById('almuerzos').value);
-      const cenas = parseInt(document.getElementById('cenas').value);
-      const bidones = parseInt(document.getElementById('bidones').value);
-
-      registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
-      mostrarTabla();
+      const nueva = {
+        fecha: document.getElementById('fecha').value,
+        desayunos: +document.getElementById('desayunos').value,
+        almuerzos: +document.getElementById('almuerzos').value,
+        cenas: +document.getElementById('cenas').value,
+        bidones: +document.getElementById('bidones').value
+      };
+      registros.push(nueva);
+      localStorage.setItem('ventas', JSON.stringify(registros));
+      mostrarVentas();
       e.target.reset();
     });
 
-    function mostrarTabla() {
-      let html = '';
-      let totalGeneral = 0;
-
-      registros.forEach((r, i) => {
-        const totalDes = r.desayunos * precios.desayuno;
-        const totalAlm = r.almuerzos * precios.almuerzo;
-        const totalCen = r.cenas * precios.cena;
-        const totalBid = r.bidones * precios.bidon;
-        const subtotal = totalDes + totalAlm + totalCen + totalBid;
-
-        totalGeneral += subtotal;
-
-        html += `
-          <h3>Día ${i + 1} - ${r.fecha}</h3>
-          <table>
-            <tr><th>Ítem</th><th>Cantidad</th><th>Precio Unitario</th><th>Total</th></tr>
-            <tr><td>Desayunos</td><td>${r.desayunos}</td><td>${formatear(precios.desayuno)}</td><td>${formatear(totalDes)}</td></tr>
-            <tr><td>Almuerzos</td><td>${r.almuerzos}</td><td>${formatear(precios.almuerzo)}</td><td>${formatear(totalAlm)}</td></tr>
-            <tr><td>Cenas</td><td>${r.cenas}</td><td>${formatear(precios.cena)}</td><td>${formatear(totalCen)}</td></tr>
-            <tr><td>Bidones</td><td>${r.bidones}</td><td>${formatear(precios.bidon)}</td><td>${formatear(totalBid)}</td></tr>
-            <tr><td colspan="3"><strong>Subtotal del día</strong></td><td><strong>${formatear(subtotal)}</strong></td></tr>
-          </table>
-        `;
+    function mostrarVentas() {
+      let html = '<h3>Resumen diario</h3>';
+      let totalGlobal = 0;
+      registros.forEach(r => {
+        const subtotal = r.desayunos * precios.desayuno + r.almuerzos * precios.almuerzo + r.cenas * precios.cena + r.bidones * precios.bidon;
+        totalGlobal += subtotal;
+        html += `<div><strong>${r.fecha}</strong><br>
+          Subtotal: ₡${subtotal.toFixed(2)}</div><hr>`;
       });
-
-      const iva = totalGeneral * 0.13;
-      const totalFinal = totalGeneral + iva;
-
-      document.getElementById('tablaFacturas').innerHTML = html;
-      document.getElementById('totalesFinales').innerHTML = `
-        <p><strong>Subtotal General:</strong> ${formatear(totalGeneral)}</p>
-        <p><strong>IVA (13%):</strong> ${formatear(iva)}</p>
-        <p><strong>Total Final:</strong> ${formatear(totalFinal)}</p>
-      `;
+      document.getElementById('listaVentas').innerHTML = html;
     }
 
     function descargarPDF() {
-      const elemento = document.getElementById("recibo");
-      elemento.classList.add('pdf-export');
-
-      setTimeout(() => {
-        const opciones = {
-          margin: 0.5,
-          filename: 'factura_acquarello.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
-          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opciones).from(elemento).save().then(() => {
-          elemento.classList.remove('pdf-export');
+      import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(js => {
+        const { jsPDF } = js;
+        import('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/+esm').then(autoTable => {
+          const doc = new jsPDF();
+          let finalTotal = 0;
+          registros.forEach((r, i) => {
+            const sub = r.desayunos * precios.desayuno + r.almuerzos * precios.almuerzo + r.cenas * precios.cena + r.bidones * precios.bidon;
+            finalTotal += sub;
+            if (i > 0) doc.addPage();
+            doc.setFontSize(14);
+            doc.text("Guana Solution Food", 20, 20);
+            doc.text(`Fecha: ${r.fecha}`, 20, 30);
+            autoTable.default(doc, {
+              startY: 40,
+              head: [['Ítem', 'Cantidad', 'Precio', 'Total']],
+              body: [
+                ['Desayunos', r.desayunos, precios.desayuno, (r.desayunos * precios.desayuno).toFixed(2)],
+                ['Almuerzos', r.almuerzos, precios.almuerzo, (r.almuerzos * precios.almuerzo).toFixed(2)],
+                ['Cenas', r.cenas, precios.cena, (r.cenas * precios.cena).toFixed(2)],
+                ['Bidones', r.bidones, precios.bidon, (r.bidones * precios.bidon).toFixed(2)],
+                ['', '', 'Subtotal', sub.toFixed(2)]
+              ]
+            });
+          });
+          const iva = finalTotal * 0.13;
+          const total = finalTotal + iva;
+          doc.addPage();
+          doc.text('Resumen General', 20, 20);
+          autoTable.default(doc, {
+            startY: 30,
+            body: [
+              ['Subtotal', `₡${finalTotal.toFixed(2)}`],
+              ['IVA 13%', `₡${iva.toFixed(2)}`],
+              ['Total', `₡${total.toFixed(2)}`]
+            ]
+          });
+          doc.save('ventas.pdf');
         });
-      }, 500);
+      });
     }
+
+    function exportarDatos() {
+      const blob = new Blob([JSON.stringify(registros)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'respaldo_ventas.json';
+      a.click();
+    }
+
+    function importarDatos(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const datos = JSON.parse(reader.result);
+        registros.splice(0, registros.length, ...datos);
+        localStorage.setItem('ventas', JSON.stringify(registros));
+        mostrarVentas();
+      };
+      reader.readAsText(file);
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('modoOscuro', document.body.classList.contains('dark-mode'));
+    }
+
+    function toggleIdioma() {
+      const nuevo = idioma === 'es' ? 'en' : 'es';
+      localStorage.setItem('idioma', nuevo);
+      location.reload();
+    }
+
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('modoOscuro') === 'true') {
+        document.body.classList.add('dark-mode');
+      }
+      mostrarVentas();
+    });
   </script>
 </body>
 </html>
-
