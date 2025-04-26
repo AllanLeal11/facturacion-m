@@ -80,10 +80,6 @@
       border-left: 5px solid #27ae60;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .history-entry button {
-      margin-top: 0.5rem;
-      background-color: #e74c3c;
-    }
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -127,8 +123,9 @@
   </div>
 
   <script>
-    let registros = JSON.parse(localStorage.getItem("ventas")) || [];
+    const registros = JSON.parse(localStorage.getItem("ventas")) || [];
 
+    // Registro de venta
     document.getElementById("ventaForm").addEventListener("submit", function(e) {
       e.preventDefault();
       const fecha = document.getElementById("fecha").value;
@@ -136,59 +133,73 @@
       const almuerzos = parseInt(document.getElementById("almuerzos").value);
       const cenas = parseInt(document.getElementById("cenas").value);
       const bidones = parseInt(document.getElementById("bidones").value);
-      registros.push({ fecha, desayunos, almuerzos, cenas, bidones });
+      
+      // Calcular los totales
+      const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
+      const totalDes = desayunos * precios.desayuno;
+      const totalAlm = almuerzos * precios.almuerzo;
+      const totalCen = cenas * precios.cena;
+      const totalBid = bidones * precios.bidon;
+      const subtotal = totalDes + totalAlm + totalCen + totalBid;
+      const iva = subtotal * 0.13;
+      const totalConIVA = subtotal + iva;
+
+      // Guardar el registro con los totales
+      registros.push({
+        fecha,
+        desayunos,
+        almuerzos,
+        cenas,
+        bidones,
+        totalDes,
+        totalAlm,
+        totalCen,
+        totalBid,
+        subtotal,
+        iva,
+        totalConIVA
+      });
+
       localStorage.setItem("ventas", JSON.stringify(registros));
       alert("Venta registrada correctamente");
       this.reset();
     });
 
+    // Mostrar sección
     function mostrarSeccion(id) {
       document.getElementById("registro").style.display = id === 'registro' ? 'block' : 'none';
       document.getElementById("historial").style.display = id === 'historial' ? 'block' : 'none';
       if (id === 'historial') cargarHistorial();
     }
 
+    // Cargar historial de ventas
     function cargarHistorial() {
       const contenedor = document.getElementById("historialContainer");
       contenedor.innerHTML = '';
-      const registrosOrdenados = [...registros].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      registrosOrdenados.forEach((r, index) => {
+      registros.forEach(r => {
         const div = document.createElement("div");
         div.className = "history-entry";
         div.innerHTML = `
           <strong>Fecha:</strong> ${r.fecha}<br>
           Desayunos: ${r.desayunos}, Almuerzos: ${r.almuerzos}, Cenas: ${r.cenas}, Bidones: ${r.bidones}<br>
-          <button onclick="eliminarRegistro(${index})">Eliminar</button>
+          Subtotal: ₡${r.subtotal.toFixed(2)}, IVA: ₡${r.iva.toFixed(2)}, Total con IVA: ₡${r.totalConIVA.toFixed(2)}
         `;
         contenedor.appendChild(div);
       });
     }
 
-    function eliminarRegistro(index) {
-      registros.splice(index, 1);
-      localStorage.setItem("ventas", JSON.stringify(registros));
-      cargarHistorial();
-    }
-
+    // Generar PDF
     function generarPDF() {
-      if (registros.length === 0) return alert("No hay datos");
+      if (registros.length === 0) return alert("No hay datos para generar el PDF");
 
       import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(jsPDFModule => {
         import('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/+esm').then(autoTable => {
           const { jsPDF } = jsPDFModule;
           const doc = new jsPDF();
-          const precios = { desayuno: 2500, almuerzo: 2500, cena: 2500, bidon: 2000 };
           let totalFinal = 0;
 
           registros.forEach((r, i) => {
-            const totalDes = r.desayunos * precios.desayuno;
-            const totalAlm = r.almuerzos * precios.almuerzo;
-            const totalCen = r.cenas * precios.cena;
-            const totalBid = r.bidones * precios.bidon;
-            const subtotal = totalDes + totalAlm + totalCen + totalBid;
-            totalFinal += subtotal;
             if (i > 0) doc.addPage();
-
             doc.setFontSize(14);
             doc.text("Guana Solution Food", 20, 20);
             doc.text(`Fecha: ${r.fecha}`, 20, 30);
@@ -197,34 +208,26 @@
               startY: 40,
               head: [["Ítem", "Cantidad", "Precio U", "Total"]],
               body: [
-                ["Desayunos", r.desayunos, "₡2,500", totalDes.toFixed(2)],
-                ["Almuerzos", r.almuerzos, "₡2,500", totalAlm.toFixed(2)],
-                ["Cenas", r.cenas, "₡2,500", totalCen.toFixed(2)],
-                ["Bidones", r.bidones, "₡2,000", totalBid.toFixed(2)],
-                ["", "", "Subtotal", subtotal.toFixed(2)],
+                ["Desayunos", r.desayunos, "₡2,500", r.totalDes.toFixed(2)],
+                ["Almuerzos", r.almuerzos, "₡2,500", r.totalAlm.toFixed(2)],
+                ["Cenas", r.cenas, "₡2,500", r.totalCen.toFixed(2)],
+                ["Bidones", r.bidones, "₡2,000", r.totalBid.toFixed(2)],
+                ["", "", "Subtotal", r.subtotal.toFixed(2)],
+                ["", "", "IVA (13%)", r.iva.toFixed(2)],
+                ["", "", "Total con IVA", r.totalConIVA.toFixed(2)],
               ]
             });
+
+            totalFinal += r.subtotal;
           });
 
-          const iva = totalFinal * 0.13;
-          const totalConIVA = totalFinal + iva;
+          const ivaTotal = totalFinal * 0.13;
+          const totalConIVAFinal = totalFinal + ivaTotal;
           doc.addPage();
           doc.setFontSize(16);
           doc.text("Resumen Final", 20, 20);
           autoTable.default(doc, {
             startY: 30,
             body: [
-              ["Subtotal acumulado", `₡${totalFinal.toFixed(2)}`],
-              ["IVA (13%)", `₡${iva.toFixed(2)}`],
-              ["Total con IVA", `₡${totalConIVA.toFixed(2)}`],
-            ]
-          });
-
-          doc.save("Guana_Solution_Food.pdf");
-        });
-      });
-    }
-  </script>
-</body>
-</html>
+             
 
