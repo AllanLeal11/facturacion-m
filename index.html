@@ -229,5 +229,16 @@
           autoTable.default(doc, {
             startY: 30,
             body: [
-             
+              ["Subtotal acumulado", `₡${totalFinal.toFixed(2)}`],
+              ["IVA (13%)", `₡${ivaTotal.toFixed(2)}`],
+              ["Total con IVA", `₡${totalConIVAFinal.toFixed(2)}`],
+            ]
+          });
 
+          doc.save("Guana_Solution_Food.pdf");
+        });
+      });
+    }
+  </script>
+</body>
+</html>
